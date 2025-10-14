@@ -1,6 +1,7 @@
 import pytest
 from library_service import (
-    add_book_to_catalog
+    add_book_to_catalog,
+    borrow_book_by_patron,
 )
 
 def test_add_book_valid_input():
