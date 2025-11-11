@@ -1,5 +1,5 @@
 import pytest
-from library_service import (
+from services.library_service import (
     add_book_to_catalog,
 )
 """
@@ -53,3 +53,31 @@ def test_add_book_invalid_negative_copies():
 
     assert success == False
     assert "Total copies must be a positive integer" in message
+
+def test_add_book_duplicate_isbn():
+    
+    add_book_to_catalog("Book One", "Author", "1233557890123", 5)
+    
+    success, message = add_book_to_catalog("Book Two", "Different Author", "1233557890123", 3)
+    
+    assert success == False
+    assert "already exists" in message
+
+def test_add_book_title_too_long():
+
+    title = "A" * 201  
+    
+    success, message = add_book_to_catalog(title, "Test Author", "1234567890123", 5)
+    
+    assert success == False
+    assert "Title must be less than 200 characters" in message
+
+def test_add_book_author_too_long():
+
+    author = "A" * 101 
+    
+    success, message = add_book_to_catalog("Test Book", author, "1234567890123", 5)
+    
+    assert success == False
+    assert "Author must be less than 100 characters" in message
+
