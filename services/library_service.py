@@ -15,8 +15,7 @@ from services.payment_service import PaymentGateway
 def add_book_to_catalog(title: str, author: str, isbn: str, total_copies: int) -> Tuple[bool, str]:
     """
     Add a new book to the catalog.
-    Implements R1: Book Catalog Management
-    
+
     Args:
         title: Book title (max 200 chars)
         author: Book author (max 100 chars)
@@ -60,8 +59,7 @@ def add_book_to_catalog(title: str, author: str, isbn: str, total_copies: int) -
 def borrow_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
     """
     Allow a patron to borrow a book.
-    Implements R3 as per requirements  
-    
+
     Args:
         patron_id: 6-digit library card ID
         book_id: ID of the book to borrow
@@ -106,7 +104,12 @@ def return_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
     """
     Process book return by a patron.
 
-    TODO: Implement R4 as per requirements
+    Args:
+        patron_id: 6-digit library card ID
+        book_id: ID of the book to return
+
+    Returns:
+        tuple: (success: bool, message: str)
     """
 
     # Check valid patron ID
@@ -153,34 +156,20 @@ def return_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
 
 def calculate_late_fee_for_book(patron_id: str, book_id: int) -> Dict:
     """
-    Calculate late fees for a specific book.
-    
-    TODO: Implement R5 as per requirements 
-    
-    The system shall provide an API endpoint GET `/api/late_fee/<patron_id>/<book_id>` that includes the following.
-- Calculates late fees for overdue books based on:
-  - Books due 14 days after borrowing
-  - $0.50/day for first 7 days overdue
-  - $1.00/day for each additional day after 7 days
-  - Maximum $15.00 per book
-- Returns JSON response with fee amount and days overdue
-    
+    Calculate late fees for a specific book borrowed by a patron.
 
-@api_bp.route('/late_fee/<patron_id>/<int:book_id>')
-def get_late_fee(patron_id, book_id):
-    
-    -Calculate late fee for a specific book borrowed by a patron.
-    -API endpoint for R4: Late Fee Calculation
-    
-    result = calculate_late_fee_for_book(patron_id, book_id)
-    return jsonify(result), 501 if 'not implemented' in result.get('status', '') else 200
+    Fee schedule:
+      - Books are due 14 days after borrowing
+      - $0.50/day for the first 7 days overdue
+      - $1.00/day for each additional day beyond 7 days overdue
+      - Maximum fee capped at $15.00 per book
 
+    Args:
+        patron_id: 6-digit library card ID
+        book_id: ID of the borrowed book
 
-    return { // return the calculated values
-        'fee_amount': 0.00,
-        'days_overdue': 0,
-        'status': 'Late fee calculation not implemented'
-    }
+    Returns:
+        dict with keys: fee_amount, days_overdue, status
     """
 
     # Check valid patron id
@@ -233,16 +222,18 @@ def get_late_fee(patron_id, book_id):
     }
 
 def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
-    """w
+    """
     Search for books in the catalog.
-    The system shall provide search functionality with the following parameters:
-- `q`: search term
-- `type`: search type (title, author, isbn)
-- Support partial matching for title/author (case-insensitive)
-- Support exact matching for ISBN
-- Return results in same format as catalog display
 
-    TODO: Implement R6 as per requirements
+    Supports partial matching for title/author (case-insensitive) and
+    exact matching for ISBN.
+
+    Args:
+        search_term: The query string to search for
+        search_type: One of 'title', 'author', or 'isbn'
+
+    Returns:
+        List of matching book dicts
     """
 
     results = []
@@ -271,20 +262,17 @@ def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
 
 def get_patron_status_report(patron_id: str) -> Dict:
     """
-    Get status report for a patron.
-    
-    ### R7: Patron Status Report 
+    Get a status report for a patron.
 
-The system shall display patron status for a particular patron that includes the following: 
+    Returns currently borrowed books with due dates, total late fees owed,
+    number of books currently borrowed, and full borrowing history.
 
-- Currently borrowed books with due dates
-- Total late fees owed  
-- Number of books currently borrowed
-- Borrowing history
+    Args:
+        patron_id: 6-digit library card ID
 
-**Note**: There should be a menu option created for showing the patron status in the main interface
-
-    TODO: Implement R7 as per requirements
+    Returns:
+        dict with keys: patron_id, currently_borrowed, book_titles,
+                        due_dates, total_late_fees, books_borrowed_count
     """
 
     # Check patrons current borrowed books
@@ -318,24 +306,18 @@ The system shall display patron status for a particular patron that includes the
 
 def pay_late_fees(patron_id: str, book_id: int, payment_gateway: PaymentGateway = None) -> Tuple[bool, str, Optional[str]]:
     """
-    Process payment for late fees using external payment gateway.
-    
-    NEW FEATURE FOR ASSIGNMENT 3: Demonstrates need for mocking/stubbing
-    This function depends on an external payment service that should be mocked in tests.
-    
+    Process payment for late fees using the external payment gateway.
+
+    The payment_gateway parameter is injectable to allow substituting a
+    test double without making real API calls.
+
     Args:
         patron_id: 6-digit library card ID
         book_id: ID of the book with late fees
-        payment_gateway: Payment gateway instance (injectable for testing)
-        
+        payment_gateway: Payment gateway instance (optional; created automatically if omitted)
+
     Returns:
         tuple: (success: bool, message: str, transaction_id: Optional[str])
-        
-    Example for you to mock:
-        # In tests, mock the payment gateway:
-        mock_gateway = Mock(spec=PaymentGateway)
-        mock_gateway.process_payment.return_value = (True, "txn_123", "Success")
-        success, msg, txn = pay_late_fees("123456", 1, mock_gateway)
     """
     # Validate patron ID
     if not patron_id or not patron_id.isdigit() or len(patron_id) != 6:
@@ -363,7 +345,6 @@ def pay_late_fees(patron_id: str, book_id: int, payment_gateway: PaymentGateway 
         payment_gateway = PaymentGateway()
     
     # Process payment through external gateway
-    # THIS IS WHAT YOU SHOULD MOCK IN THEIR TESTS!
     try:
         success, transaction_id, message = payment_gateway.process_payment(
             patron_id=patron_id,
@@ -383,10 +364,8 @@ def pay_late_fees(patron_id: str, book_id: int, payment_gateway: PaymentGateway 
 
 def refund_late_fee_payment(transaction_id: str, amount: float, payment_gateway: PaymentGateway = None) -> Tuple[bool, str]:
     """
-    Refund a late fee payment (e.g., if book was returned on time but fees were charged in error).
-    
-    NEW FEATURE FOR ASSIGNMENT 3: Another function requiring mocking
-    
+    Refund a late fee payment (e.g., if fees were charged in error).
+
     Args:
         transaction_id: Original transaction ID to refund
         amount: Amount to refund
@@ -410,7 +389,6 @@ def refund_late_fee_payment(transaction_id: str, amount: float, payment_gateway:
         payment_gateway = PaymentGateway()
     
     # Process refund through external gateway
-    # THIS IS WHAT YOU SHOULD MOCK IN YOUR TESTS!
     try:
         success, message = payment_gateway.refund_payment(transaction_id, amount)
         

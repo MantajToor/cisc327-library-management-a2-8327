@@ -1,9 +1,6 @@
 """
 Payment Service Module - External Payment Gateway Integration
 This module simulates integration with an external payment processing API.
-
-For Assignment 3: You will learn to mock this service in their tests
-since we cannot make actual payment API calls during testing.
 """
 
 import requests
@@ -15,11 +12,6 @@ class PaymentGateway:
     """
     Simulates an external payment gateway API.
     In production, this would connect to services like Stripe, PayPal, etc.
-    
-    For testing purposes, you should MOCK this class to avoid:
-    - Making actual API calls
-    - Depending on external service availability
-    - Incurring costs or rate limits
     """
     
     def __init__(self, api_key: str = "test_key_12345"):
@@ -36,9 +28,6 @@ class PaymentGateway:
         """
         Process a payment through the external gateway.
         
-        WARNING: This makes an actual HTTP request to external service.
-        You should MOCK this method in tests!
-        
         Args:
             patron_id: 6-digit patron/customer ID
             amount: Payment amount in dollars
@@ -46,10 +35,6 @@ class PaymentGateway:
             
         Returns:
             tuple: (success: bool, transaction_id: str, message: str)
-            
-        Example:
-            gateway = PaymentGateway()
-            success, txn_id, msg = gateway.process_payment("123456", 10.50, "Late fees")
         """
         # Simulate API call delay
         time.sleep(0.5)
@@ -66,8 +51,7 @@ class PaymentGateway:
         #     }
         # )
         
-        # For this template, we simulate different scenarios based on amount
-        # This allows testing without a real API
+        # Simulate different scenarios based on amount
         
         if amount <= 0:
             return False, "", "Invalid amount: must be greater than 0"
@@ -85,9 +69,6 @@ class PaymentGateway:
     def refund_payment(self, transaction_id: str, amount: float) -> Tuple[bool, str]:
         """
         Refund a previous payment.
-        
-        WARNING: This makes an actual HTTP request to external service.
-        You should MOCK this method in tests!
         
         Args:
             transaction_id: Original transaction ID to refund
@@ -110,9 +91,6 @@ class PaymentGateway:
     def verify_payment_status(self, transaction_id: str) -> Dict:
         """
         Check the status of a payment transaction.
-        
-        WARNING: This makes an actual HTTP request to external service.
-        You should MOCK this method in tests!
         
         Args:
             transaction_id: Transaction ID to check

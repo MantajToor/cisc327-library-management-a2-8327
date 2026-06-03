@@ -1,9 +1,9 @@
 # Library Management System - Requirements Specification
 
 ## Project Overview
-This document specifies the requirements for Flask-based Library Management System web application with SQLite database, designed for educational purposes in CISC 327 Software Quality Assurance coursework. The system uses Flask Blueprints for route organization and separates business logic for comprehensive unit testing.
+This document specifies the requirements for a Flask-based Library Management System web application with SQLite database. The system uses Flask Blueprints for route organization and separates business logic for comprehensive unit testing.
 
-**Total Requirements**: 7 functional requirements (R1-R7). For this assignment, students will focus on unit testing the **business logic functions** that implement these requirements, with emphasis on input validation, business rules, and bug detection.
+**Total Requirements**: 7 functional requirements (R1-R7).
 
 ## Functional Requirements
 
@@ -67,7 +67,7 @@ The system shall display patron status for a particular patron that includes the
 **Note**: There should be a menu option created for showing the patron status in the main interface
 
 ## Non-Functional Requirements
-For this project, we will not focus on the non-functional aspects of the software
+Non-functional requirements (performance, scalability, security) are out of scope for the current version.
 
 ## Technical Constraints
 - Use Flask with Jinja2 templates for the frontend (already adopted)

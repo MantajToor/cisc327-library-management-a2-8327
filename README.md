@@ -1,38 +1,107 @@
-# Library Management System - Flask Web Application with SQLite
+# Library Management System
 
-## Overview
+A Flask web application for managing a library's book catalog, borrowing, and returns. Built with Python, Flask, and SQLite.
 
-This project contains an implementation of a Flask-based Library Management System with SQLite database.
+## Features
 
-- [`requirements_specification.md`](requirements_specification.md): Complete requirements document with 7 functional requirements (R1-R7)
-- [`app.py`](app.py): Main Flask application with application factory pattern
-- [`routes/`](routes/): Modular Flask blueprints for different functionalities
-  - [`catalog_routes.py`](routes/catalog_routes.py): Book catalog display and management routes
-  - [`borrowing_routes.py`](routes/borrowing_routes.py): Book borrowing and return routes
-  - [`api_routes.py`](routes/api_routes.py): JSON API endpoints for late fees and search
-  - [`search_routes.py`](routes/search_routes.py): Book search functionality routes
-- [`database.py`](database.py): Database operations and SQLite functions
-- [`library_service.py`](library_service.py): **Business logic functions** (your main testing focus)
-- [`templates/`](templates/): HTML templates for the web interface
-- [`requirements.txt`](requirements.txt): Python dependencies
+- Browse and search the book catalog (by title, author, or ISBN)
+- Add new books with duplicate ISBN detection
+- Borrow and return books with availability tracking
+- Tiered late fee calculation ($0.50/day for first 7 days, $1.00/day after, capped at $15.00)
+- Patron status reports showing currently borrowed books and fees owed
+- Payment and refund processing via an injectable payment gateway
+- REST API endpoint for late fee lookups (`GET /api/late_fee/<patron_id>/<book_id>`)
 
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repo-url>
+cd library-management-system
+
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Running the App
+
+```bash
+python app.py
+```
+
+Visit `http://localhost:5000` in your browser. The database is created automatically on first run and seeded with a few sample books.
+
+## Running Tests
+
+### Unit tests
+
+```bash
+pytest tests/ -v
+```
+
+### With coverage report
+
+```bash
+pytest tests/ -v --cov=. --cov-report=term-missing
+```
+
+### End-to-end tests (requires the app to be running)
+
+```bash
+playwright install
+pytest tests/e2e/ -v
+```
+
+## Project Structure
+
+```
+├── app.py                  # Application factory and entry point
+├── database.py             # SQLite operations
+├── library_service.py      # Core business logic
+├── services/
+│   ├── library_service.py  # Extended service layer (payment integration)
+│   └── payment_service.py  # External payment gateway abstraction
+├── routes/
+│   ├── catalog_routes.py   # Book catalog and add-book routes
+│   ├── borrowing_routes.py # Borrow and return routes
+│   ├── search_routes.py    # Search routes
+│   └── api_routes.py       # JSON API endpoints
+├── templates/              # Jinja2 HTML templates
+├── tests/                  # Unit and integration tests
+│   └── e2e/                # Playwright end-to-end tests
+└── requirements.txt
+```
 
 ## Database Schema
-**Books Table:**
-- `id` (INTEGER PRIMARY KEY)
-- `title` (TEXT NOT NULL)
-- `author` (TEXT NOT NULL)  
-- `isbn` (TEXT UNIQUE NOT NULL)
-- `total_copies` (INTEGER NOT NULL)
-- `available_copies` (INTEGER NOT NULL)
 
-**Borrow Records Table:**
-- `id` (INTEGER PRIMARY KEY)
-- `patron_id` (TEXT NOT NULL)
-- `book_id` (INTEGER FOREIGN KEY)
-- `borrow_date` (TEXT NOT NULL)
-- `due_date` (TEXT NOT NULL)
-- `return_date` (TEXT NULL)
+**books**
 
+| Column | Type |
+|---|---|
+| `id` | INTEGER PRIMARY KEY |
+| `title` | TEXT NOT NULL |
+| `author` | TEXT NOT NULL |
+| `isbn` | TEXT UNIQUE NOT NULL |
+| `total_copies` | INTEGER NOT NULL |
+| `available_copies` | INTEGER NOT NULL |
 
+**borrow_records**
 
+| Column | Type |
+|---|---|
+| `id` | INTEGER PRIMARY KEY |
+| `patron_id` | TEXT NOT NULL |
+| `book_id` | INTEGER (FK → books) |
+| `borrow_date` | TEXT NOT NULL |
+| `due_date` | TEXT NOT NULL |
+| `return_date` | TEXT (NULL until returned) |
